@@ -30,7 +30,7 @@ app.post("/api/chat", async (req, res) => {
     }
 
     const response = await aiClient.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.5-flash",
       contents: message,
       config: {
         systemInstruction: `You are an AI assistant for a local Indian grocery store called "Aashirwad Stores".
@@ -71,6 +71,7 @@ You must output ONLY valid JSON using the provided schema. Do not output markdow
     }
 
   } catch (error: any) {
+    console.error("Raw Chat API Error:", error);
     let errorMsg = error.message || "Failed to process chat";
     
     try {
