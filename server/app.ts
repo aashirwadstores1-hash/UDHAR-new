@@ -35,18 +35,20 @@ app.post("/api/chat", async (req, res) => {
       config: {
         systemInstruction: `You are an AI assistant for a local Indian grocery store called "Aashirwad Stores".
 Your job is to parse the shopkeeper's natural language input (Hindi or English) to extract intent and customer details.
+The shopkeeper may provide either a customer name or a mobile number (or both).
 Supported intents:
-- "udhari": Customer takes goods on credit (e.g., "Rahul 500 udhar")
-- "paid": Customer paid money (e.g., "Rahul ne 300 pay kiya")
-- "query_balance": Ask for balance (e.g., "Deepak remaining kitna", "Rahul ka balance")
+- "udhari": Customer takes goods on credit or pending amount is added (e.g., "Rahul 500 udhar", "9876543210 500 pending", "Aman ko 200 ka saman diya")
+- "paid": Customer paid money (e.g., "Rahul ne 300 pay kiya", "Received 500 from 9876543210")
+- "query_balance": Ask for balance (e.g., "Deepak remaining kitna", "9876543210 ka balance")
 - "send_reminder": Ask to send SMS reminder (e.g., "Umesh ko reminder bhejo")
 
+If the shopkeeper provides a mobile number instead of a name, put it in the "mobile" field and use it as the "customerName" if no name is available.
 You must output ONLY valid JSON using the provided schema. Do not output markdown code blocks.`,
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            customerName: { type: Type.STRING, description: "The name of the customer." },
+            customerName: { type: Type.STRING, description: "The name of the customer, or the mobile number if name is not provided." },
             mobile: { type: Type.STRING, description: "The mobile number of the customer, if provided." },
             intent: { type: Type.STRING, enum: ["paid", "udhari", "query_balance", "send_reminder"], description: "The recognized intent." },
             amount: { type: Type.NUMBER, description: "The amount of the transaction, if applicable." },

@@ -30,7 +30,11 @@ export function Chatbot() {
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
-      if (data.name.toLowerCase().includes(customerName.toLowerCase())) {
+      const matchName = customerName && data.name && data.name.toLowerCase().includes(customerName.toLowerCase());
+      const matchMobile = (parsedData.mobile && data.mobile && data.mobile.includes(parsedData.mobile)) || 
+                          (customerName && data.mobile && data.mobile.includes(customerName));
+      
+      if (matchName || matchMobile) {
         matches.push({ id: doc.id, ...data });
       }
     });
@@ -144,10 +148,18 @@ export function Chatbot() {
         body: JSON.stringify({ message: userMessage })
       });
       
-      const data = await response.json();
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error("Non-JSON response:", text);
+        throw new Error(`Server returned unexpected response (Status ${response.status})`);
+      }
       
-      if (data.error) {
-        throw new Error(data.error);
+      if (!response.ok) {
+        throw new Error(data.error || `Server Error ${response.status}`);
       }
 
       const parsed = data.result;
